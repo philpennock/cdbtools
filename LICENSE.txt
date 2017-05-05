@@ -1,0 +1,4 @@
+Released to public domain with no warranties of any kind, you get to keep both
+pieces and debug if anything breaks.
+
+Relies upon <https://github.com/colinmarc/cdb> (a MIT license at time of check).
