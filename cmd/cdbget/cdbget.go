@@ -32,6 +32,7 @@ func main() {
 	}
 
 	needleKey := []byte(os.Args[1])
+
 	skipCount := 0
 	if len(os.Args) >= 3 {
 		sc, err := strconv.ParseUint(os.Args[2], 10, 32)
@@ -44,6 +45,25 @@ func main() {
 	c, err := cdb.New(os.Stdin, nil)
 	if err != nil {
 		die(111, "unable to convert stdin to CDB: %s", err)
+	}
+
+	if len(os.Args) == 2 {
+		// avoid the linear scan, just use the hash-based lookup directly.
+		// Thus `cdbget key` is fast, `cdbget key 0` is slow, but guaranteed to
+		// let you iterate to get all instances for a given key.
+		//
+		// Short-circuiting for the "any instance of the key will do" case
+		// should help performance with large files.
+
+		v, err := c.Get(needleKey)
+		if err != nil {
+			die(111, "looking for key: %s", err)
+		}
+		if v == nil {
+			os.Exit(100)
+		}
+		fmt.Printf("%s\n", v)
+		os.Exit(0)
 	}
 
 	for iter := c.Iter(); iter.Next(); {
